@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 UCX Search - Privacy-First Search Engine</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🚀</span>
+                    <span class="logo-text">UCX Search</span>
+                </div>
+                <p class="tagline">Privacy-First • No Tracking • Lightning Fast</p>
+            </div>
+        </header>
+
+        <!-- Theme Selector -->
+        <div class="theme-selector">
+            <select id="themeSelect" onchange="changeTheme(this.value)">
+                {% for key, theme in themes.items() %}
+                <option value="{{ key }}">{{ theme['name'] }}</option>
+                {% endfor %}
+            </select>
+            <span class="theme-label">🎨 Theme</span>
+        </div>
+
+        <!-- Main Search -->
+        <main class="main">
+            <div class="search-container">
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Search securely with Yep... (no tracking)" 
+                        class="search-input"
+                        autocomplete="off"
+                    >
+                    <button id="searchBtn" class="search-btn" onclick="performSearch()">
+                        🔍 Search
+                    </button>
+                    <button id="clearBtn" class="clear-btn" onclick="clearResults()" style="display:none;">
+                        ✕ Clear
+                    </button>
+                </div>
+
+                <!-- Search Options -->
+                <div class="search-options">
+                    <label class="option">
+                        <input type="number" id="resultsCount" min="1" max="50" value="10">
+                        <span>Results</span>
+                    </label>
+                    <label class="option checkbox">
+                        <input type="checkbox" id="parallelSearch">
+                        <span>⚡ Fast Mode (Parallel)</span>
+                    </label>
+                    <button class="option-btn" onclick="exportResults()">💾 Export</button>
+                    <button class="option-btn" onclick="toggleHistory()">📜 History</button>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="loading" style="display:none;">
+                <div class="spinner"></div>
+                <p>Searching with privacy...</p>
+            </div>
+
+            <!-- Results -->
+            <div id="results" class="results"></div>
+
+            <!-- History Sidebar -->
+            <div id="historySidebar" class="history-sidebar" style="display:none;">
+                <div class="history-header">
+                    <h3>Search History</h3>
+                    <button onclick="closeHistory()">✕</button>
+                </div>
+                <div id="historyList" class="history-list"></div>
+            </div>
+
+            <!-- Privacy Notice -->
+            <div class="privacy-notice">
+                <span>🔒</span>
+                <p><strong>Privacy First:</strong> Your searches are processed through Yep (no tracking) with secure fallback to Tavily. No cookies, no tracking, no profiling.</p>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <p>© 2025 UCX Search • Built with ❤️ for privacy</p>
+                <div class="footer-links">
+                    <a href="#" onclick="showAbout()">About</a>
+                    <a href="#" onclick="showPrivacy()">Privacy</a>
+                    <a href="https://github.com" target="_blank">GitHub</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal: About -->
+    <div id="aboutModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('aboutModal')">&times;</span>
+            <h2>🚀 About UCX Search</h2>
+            <p>UCX Search is a privacy-focused search engine that puts your privacy first.</p>
+            <h3>Features:</h3>
+            <ul>
+                <li>🌐 Primary search through Yep (no API key needed)</li>
+                <li>🔄 Intelligent fallback to Tavily</li>
+                <li>🎨 20+ beautiful themes</li>
+                <li>⚡ Lightning-fast results</li>
+                <li>🔒 Zero tracking, zero cookies</li>
+                <li>📦 Instant result caching</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Modal: Privacy -->
+    <div id="privacyModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('privacyModal')">&times;</span>
+            <h2>🔒 Privacy Policy</h2>
+            <p><strong>Your privacy is sacred.</strong></p>
+            <p>UCX Search does not:</p>
+            <ul>
+                <li>❌ Track your searches</li>
+                <li>❌ Store your personal data</li>
+                <li>❌ Use cookies for tracking</li>
+                <li>❌ Profile your behavior</li>
+                <li>❌ Sell your data</li>
+            </ul>
+            <p>We use:</p>
+            <ul>
+                <li>✅ Yep Search (privacy-focused)</li>
+                <li>✅ Client-side caching only</li>
+                <li>✅ HTTPS encryption</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
