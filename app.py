@@ -1,9 +1,8 @@
 """
-UCX Search Web UI - Beautiful, Privacy-Focused Interface
-20+ Themes, Fast, and Privacy-First
+UCX Search Web UI - Enhanced with AI Chat, Image Search, News
 """
 
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 import json
 import os
@@ -21,7 +20,7 @@ CORS(app)
 TAVILY_API_KEY = os.environ.get('TAVILY_API_KEY', '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')
 ucx_search = UCXSearch(tavily_api_key=TAVILY_API_KEY)
 
-# Theme configuration
+# Enhanced theme configuration (22+ themes)
 THEMES = {
     'dark-midnight': {'name': 'Dark Midnight', 'primary': '#0f0f0f', 'accent': '#00d4ff'},
     'dark-slate': {'name': 'Dark Slate', 'primary': '#1a1a2e', 'accent': '#16c784'},
@@ -43,6 +42,8 @@ THEMES = {
     'lime-bright': {'name': 'Lime', 'primary': '#0f1a00', 'accent': '#84cc16'},
     'indigo-deep': {'name': 'Indigo', 'primary': '#0f0a1f', 'accent': '#6366f1'},
     'zinc-neutral': {'name': 'Zinc', 'primary': '#09090b', 'accent': '#a1a1aa'},
+    'cyberpunk': {'name': 'Cyberpunk', 'primary': '#0d0221', 'accent': '#ff006e'},
+    'aurora': {'name': 'Aurora', 'primary': '#0a1f2e', 'accent': '#16c784'},
 }
 
 @app.route('/')
@@ -52,54 +53,87 @@ def index():
 
 @app.route('/api/search', methods=['POST'])
 def api_search():
-    """API endpoint for search"""
+    """Enhanced search API endpoint"""
     try:
         data = request.get_json()
         query = data.get('query', '').strip()
+        search_type = data.get('search_type', 'web')
         num_results = min(int(data.get('results', 10)), 50)
-        parallel = data.get('parallel', False)
+        use_ai = data.get('use_ai', True)
         
         if not query:
             return jsonify({'error': 'Query required'}), 400
         
         # Perform search
-        results = ucx_search.search(query, num_results=num_results, parallel=parallel)
+        results = ucx_search.search(
+            query,
+            search_type=search_type,
+            num_results=num_results,
+            use_ai=use_ai
+        )
         
         return jsonify(results)
     
     except Exception as e:
         logger.error(f"Search error: {e}")
+        return jsonify({'error': str(e), 'success': False}), 500
+
+@app.route('/api/chat', methods=['POST'])
+def api_chat():
+    """Chat API endpoint with optional search"""
+    try:
+        data = request.get_json()
+        message = data.get('message', '').strip()
+        search_enabled = data.get('search', True)
+        
+        if not message:
+            return jsonify({'error': 'Message required'}), 400
+        
+        # Process chat
+        response = ucx_search.chat(message, search_enabled=search_enabled)
+        
+        return jsonify(response)
+    
+    except Exception as e:
+        logger.error(f"Chat error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/history', methods=['GET'])
 def api_history():
     """Get search history"""
     history = ucx_search.get_history()
-    return jsonify({'history': history[-10:]})  # Last 10 searches
+    return jsonify({'history': history[-15:]})
+
+@app.route('/api/chat-history', methods=['GET'])
+def api_chat_history():
+    """Get chat history"""
+    chat_history = ucx_search.get_chat_history()
+    return jsonify({'history': chat_history[-20:]})
 
 @app.route('/api/clear-cache', methods=['POST'])
 def api_clear_cache():
     """Clear search cache"""
-    ucx_search.clear_cache()
-    return jsonify({'status': 'Cache cleared'})
-
-@app.route('/api/export', methods=['POST'])
-def api_export():
-    """Export search results"""
     try:
-        data = request.get_json()
-        results = data.get('results', {})
-        
-        filename = ucx_search.save_results(results)
-        return jsonify({'filename': filename, 'status': 'Exported'})
-    
+        ucx_search.clear_cache()
+        return jsonify({'status': 'Cache cleared', 'success': True})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e), 'success': False}), 500
 
 @app.route('/api/themes', methods=['GET'])
 def api_themes():
     """Get available themes"""
     return jsonify(THEMES)
+
+@app.errorhandler(404)
+def not_found(e):
+    """Handle 404 errors"""
+    return jsonify({'error': 'Not found', 'success': False}), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    """Handle 500 errors"""
+    logger.error(f"Server error: {e}")
+    return jsonify({'error': 'Server error', 'success': False}), 500
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000, threaded=True)
